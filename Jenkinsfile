@@ -1,35 +1,43 @@
 pipeline {
     agent any
+
     stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+        
         stage('Restore') {
             steps {
                 script {
-                    // Restore .NET dependencies for the solution using PowerShell
-                    powershell 'dotnet restore HelloWorld.sln'
+                    powershell 'dotnet restore'
                 }
             }
         }
+        
         stage('Build') {
             steps {
                 script {
-                    // Build the solution in Release configuration using PowerShell
-                    powershell 'dotnet build HelloWorld.sln --configuration Release'
+                    // Ensure build is done in Debug mode to match the test environment
+                    powershell 'dotnet build --configuration Debug'
                 }
             }
         }
+        
         stage('Test') {
             steps {
                 script {
-                    // Run tests for the solution using PowerShell
-                    powershell 'dotnet test HelloWorld.sln --no-build'
+                    // Test command also configured for Debug mode
+                    powershell 'dotnet test --configuration Debug'
                 }
             }
         }
     }
+
     post {
         always {
-            // Clean up the workspace after the build
-            cleanWs()
+            cleanWs() // Clean workspace after the build
         }
     }
 }
